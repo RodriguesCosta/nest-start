@@ -1,22 +1,15 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/createUser.dto';
-import { UserEntity } from './entities/user.entity';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { hash } from 'bcrypt';
+import { CreateUserDto } from './dto/createUser.dto';
+import { IUserRepository } from './repositories/IUserRepository';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>,
-  ) {}
+  @Inject('UserRepository')
+  private userRepository: IUserRepository;
 
   async create(data: CreateUserDto) {
-    const checkEmail = await this.usersRepository.findOne({
-      where: { email: data.email },
-      select: ['id'],
-    });
+    const checkEmail = await this.userRepository.findByEmail(data.email);
 
     if (checkEmail) {
       throw new HttpException(
@@ -30,8 +23,8 @@ export class UserService {
 
     data.password = await hash(data.password, 10);
 
-    const user = this.usersRepository.create(data);
+    const user = await this.userRepository.create(data);
 
-    return await this.usersRepository.save(user);
+    return user;
   }
 }

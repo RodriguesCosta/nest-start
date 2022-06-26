@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
-import { passwordRegEx } from 'src/helpers/regex.helper';
+import { passwordRegEx } from '../../../helpers/regex.helper';
 
 export class CreateUserDto {
   @IsNotEmpty()

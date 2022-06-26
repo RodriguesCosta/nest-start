@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserMemoryRepository } from './repositories/in-memory/UserMemoryRepository';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
@@ -9,11 +10,10 @@ describe('UserController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
       providers: [
+        UserService,
         {
-          provide: UserService,
-          useValue: {
-            create: jest.fn(),
-          },
+          provide: 'UserRepository',
+          useClass: UserMemoryRepository,
         },
       ],
     }).compile();
@@ -23,5 +23,21 @@ describe('UserController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('store', () => {
+    it('should create a user', async () => {
+      const userData = {
+        email: 'test@test.com',
+        name: 'User Test',
+        password: '123456789',
+      };
+
+      const user = await controller.store({ ...userData });
+
+      expect(user).toBeDefined();
+      expect(user.id).toBeDefined();
+      expect(user.password).not.toBeDefined();
+    });
   });
 });

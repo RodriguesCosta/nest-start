@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Start containers
+      run: docker-compose up -d
+
+    - uses: actions/setup-node@v2
+      with:
+        node-version: "16"
+        cache: 'yarn'
+    - run: cp .env.example .env
+    - run: yarn install
+    - run: yarn build
+    - run: yarn test
+
+    - name: Stop containers
+      if: always()
+      run: docker-compose down
